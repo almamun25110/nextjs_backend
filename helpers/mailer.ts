@@ -4,11 +4,11 @@ import bcrypt from "bcryptjs";
 
 export const sendEmail = async ({ email, emailType, userId }: any) => {
     try {
-     const hashedUserId = await bcrypt.hash(userId.toString(), 10);
+     const hashedToken = await bcrypt.hash(userId.toString(), 10);
      if (emailType === "VERIFY") {
-      await User.findByIdAndUpdate(userId, { verificationToken: hashedUserId, verificationTokenExpiry: Date.now() + 3600000 });
-     } else if (emailType === "Reset your password") {
-      await User.findByIdAndUpdate(userId, { forgotPasswordToken: hashedUserId, forgotPasswordExpiry: Date.now() + 3600000 });
+      await User.findByIdAndUpdate(userId, { verificationToken: hashedToken, verificationTokenExpiry: Date.now() + 3600000 });
+     } else if (emailType === "RESET") {
+      await User.findByIdAndUpdate(userId, { forgotPasswordToken: hashedToken, forgotPasswordExpiry: Date.now() + 3600000 });
      }
 
     var transport = nodemailer.createTransport({
@@ -23,7 +23,7 @@ export const sendEmail = async ({ email, emailType, userId }: any) => {
     from: 'abdullah@example.com',
     to: email,
     subject: emailType === "VERIFY" ? "Verify your email" : "Reset your password",
-    html: `<p>Click <a href='${process.env.DOMAIN}/verify-email?token=${hashedUserId}'>here</a> to ${emailType === "VERIFY" ? "Verify your email" : "Reset your password"}</p>`,
+    html: `<p>Click <a href='${process.env.DOMAIN}/verify-email?token=${hashedToken}'>here</a> to ${emailType === "VERIFY" ? "Verify your email" : "Reset your password"}</p> or copy and paste this link in your browser: ${process.env.DOMAIN}/verify-email?token=${hashedToken}`,
   });
     return info;
 
